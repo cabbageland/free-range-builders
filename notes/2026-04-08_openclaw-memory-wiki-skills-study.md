@@ -1,9 +1,9 @@
 # OpenClaw study notes — memory, wiki, and skills framework
 
 Date: 2026-04-08
-Studied repo: `openclaw/openclaw`
-Repo snapshot studied: `main` @ `210ee4cfd2c3ba760c28758efdd72762382d9570`
-Latest upstream commit at study time: `fix(qqbot): support HTML entities in media tags (&lt; &gt;) (#60493)`
+Studied repo: [[`openclaw/openclaw`](https://github.com/openclaw/openclaw)](https://github.com/openclaw/openclaw)
+Repo snapshot studied: [`main` @ `210ee4cfd2c3ba760c28758efdd72762382d9570`](https://github.com/openclaw/openclaw/tree/210ee4cfd2c3ba760c28758efdd72762382d9570)
+Latest upstream commit at study time: [`fix(qqbot): support HTML entities in media tags (< >) (#60493)`](https://github.com/openclaw/openclaw/commit/210ee4cfd2c3ba760c28758efdd72762382d9570)
 
 ## Why this matters
 
@@ -29,22 +29,22 @@ My read: the newest OpenClaw memory/wiki/skills design is good in exactly the pl
 
 OpenClaw cleanly separates three things:
 
-- **bootstrap identity/context**: `AGENTS.md`, `SOUL.md`, `TOOLS.md`, `IDENTITY.md`, `USER.md`, `HEARTBEAT.md`, optional `BOOTSTRAP.md`, and `MEMORY.md`
-- **retrieval memory runtime**: `memory_search`, `memory_get`, indexing, promotion, dreaming, recall
-- **knowledge compilation layer**: `memory-wiki`, which builds a structured wiki beside memory rather than replacing it
+- **bootstrap identity/context**: [`AGENTS.md`](https://github.com/openclaw/openclaw/blob/main/AGENTS.md), [`SOUL.md`](https://github.com/openclaw/openclaw/blob/main/SOUL.md), [`TOOLS.md`](https://github.com/openclaw/openclaw/blob/main/TOOLS.md), [`IDENTITY.md`](https://github.com/openclaw/openclaw/blob/main/IDENTITY.md), [`USER.md`](https://github.com/openclaw/openclaw/blob/main/USER.md), [`HEARTBEAT.md`](https://github.com/openclaw/openclaw/blob/main/HEARTBEAT.md), optional [`BOOTSTRAP.md`](https://github.com/openclaw/openclaw/blob/main/BOOTSTRAP.md), and [`MEMORY.md`](https://github.com/openclaw/openclaw/blob/main/MEMORY.md)
+- **retrieval memory runtime**: [`memory_search`](https://docs.openclaw.ai/tools/memory-search), [`memory_get`](https://docs.openclaw.ai/tools/memory-get), indexing, promotion, dreaming, recall
+- **knowledge compilation layer**: [`memory-wiki`](https://github.com/openclaw/openclaw/tree/main/extensions/memory-wiki), which builds a structured wiki beside memory rather than replacing it
 
 That separation is important. It prevents “memory” from collapsing into one giant vague blob.
 
 ### Strongest ideas
 
 - **Markdown-first memory** instead of hidden vector soup
-- **On-demand recall** for `memory/*.md` instead of always injecting everything into prompt
-- **Skills listed compactly, loaded lazily by reading the specific `SKILL.md` only when needed**
+- **On-demand recall** for [`memory/*.md`](https://github.com/openclaw/openclaw/tree/main/memory) instead of always injecting everything into prompt
+- **Skills listed compactly, loaded lazily by reading the specific [`SKILL.md`](https://docs.openclaw.ai/tools/skills) only when needed**
 - **Wiki as a companion layer, not a replacement layer**
 - **Public plugin seams** for corpus supplements and prompt supplements
-- **Deterministic generated artifacts** (`agent-digest.json`, `claims.jsonl`) so agents/runtime do not need to scrape markdown
+- **Deterministic generated artifacts** ([`agent-digest.json`](https://github.com/openclaw/openclaw/tree/main/extensions/memory-wiki), [`claims.jsonl`](https://github.com/openclaw/openclaw/tree/main/extensions/memory-wiki)) so agents/runtime do not need to scrape markdown
 - **Bridge mode** that reuses public memory artifacts without violating plugin boundaries
-- **Narrow mutation tools** like `wiki_apply` instead of encouraging raw freeform edits to generated sections
+- **Narrow mutation tools** like [`wiki_apply`](https://docs.openclaw.ai/cli/wiki) instead of encouraging raw freeform edits to generated sections
 
 ### What I think is most reusable for us
 
@@ -68,14 +68,14 @@ OpenClaw’s docs are extremely clear: memory is persisted as plain markdown in 
 
 Main files:
 
-- `MEMORY.md` → durable facts, preferences, decisions
-- `memory/YYYY-MM-DD.md` → daily notes / running context
-- `DREAMS.md` → optional human-readable dreaming output
+- [`MEMORY.md`](https://github.com/openclaw/openclaw/blob/main/MEMORY.md) → durable facts, preferences, decisions
+- [`memory/YYYY-MM-DD.md`](https://github.com/openclaw/openclaw/tree/main/memory) → daily notes / running context
+- [`DREAMS.md`](https://github.com/openclaw/openclaw/blob/main/DREAMS.md) → optional human-readable dreaming output
 
 Important design detail:
 
-- `MEMORY.md` is injected into normal sessions when present
-- `memory/*.md` daily files are **not auto-injected**; they are accessed via `memory_search` / `memory_get`
+- [`MEMORY.md`](https://github.com/openclaw/openclaw/blob/main/MEMORY.md) is injected into normal sessions when present
+- [`memory/*.md`](https://github.com/openclaw/openclaw/tree/main/memory) daily files are **not auto-injected**; they are accessed via [`memory_search`](https://docs.openclaw.ai/tools/memory-search) / [`memory_get`](https://docs.openclaw.ai/tools/memory-get)
 
 Why this is smart:
 
@@ -90,7 +90,7 @@ This is one of the best practical tradeoffs in the whole design.
 
 ### 2) Memory retrieval is not just dumb file grep
 
-The builtin memory engine indexes `MEMORY.md` and `memory/*.md` into a per-agent SQLite DB.
+The builtin memory engine indexes [`MEMORY.md`](https://github.com/openclaw/openclaw/blob/main/MEMORY.md) and [`memory/*.md`](https://github.com/openclaw/openclaw/tree/main/memory) into a per-agent SQLite DB.
 
 From the docs:
 
@@ -100,7 +100,7 @@ From the docs:
 - hybrid search merges vector + BM25
 - optional MMR reduces duplicate hits
 - optional temporal decay downranks older daily notes
-- evergreen files like `MEMORY.md` are not decayed
+- evergreen files like [`MEMORY.md`](https://github.com/openclaw/openclaw/blob/main/MEMORY.md) are not decayed
 
 This is a very sane retrieval stack.
 
@@ -119,12 +119,12 @@ This is materially better than “embeddings only.” Exact keyword retrieval ma
 
 This is the key conceptual move.
 
-`memory-wiki` does **not** replace the active memory plugin.
+[`memory-wiki`](https://github.com/openclaw/openclaw/tree/main/extensions/memory-wiki) does **not** replace the active memory plugin.
 
 Instead:
 
 - the active memory plugin owns recall, promotion, indexing, dreaming
-- `memory-wiki` compiles durable knowledge into a navigable wiki with claims, evidence, dashboards, and digests
+- [`memory-wiki`](https://github.com/openclaw/openclaw/tree/main/extensions/memory-wiki) compiles durable knowledge into a navigable wiki with claims, evidence, dashboards, and digests
 
 This prevents a common category mistake:
 
@@ -151,11 +151,11 @@ The wiki layer is their answer to that distinction.
 
 The wiki vault layout is deterministic:
 
-- `entities/`
-- `concepts/`
-- `syntheses/`
-- `sources/`
-- `reports/`
+- [`entities/`](https://github.com/openclaw/openclaw/tree/main/extensions/memory-wiki)
+- [`concepts/`](https://github.com/openclaw/openclaw/tree/main/extensions/memory-wiki)
+- [`syntheses/`](https://github.com/openclaw/openclaw/tree/main/extensions/memory-wiki)
+- [`sources/`](https://github.com/openclaw/openclaw/tree/main/extensions/memory-wiki)
+- [`reports/`](https://github.com/openclaw/openclaw/tree/main/extensions/memory-wiki)
 - `.openclaw-wiki/cache/`
 
 It also supports structured claim/evidence metadata, including fields like:
@@ -186,8 +186,8 @@ That is much closer to a serious knowledge system than a pile of markdown notes 
 
 The wiki compile step emits stable artifacts under:
 
-- `.openclaw-wiki/cache/agent-digest.json`
-- `.openclaw-wiki/cache/claims.jsonl`
+- [`.openclaw-wiki/cache/agent-digest.json`](https://github.com/openclaw/openclaw/tree/main/extensions/memory-wiki)
+- [`.openclaw-wiki/cache/claims.jsonl`](https://github.com/openclaw/openclaw/tree/main/extensions/memory-wiki)
 
 This is excellent design.
 
@@ -198,7 +198,7 @@ Why:
 - prompt supplements can stay compact and high-signal
 - dashboards can be regenerated deterministically
 
-The prompt supplement code in `extensions/memory-wiki/src/prompt-section.ts` is revealing.
+The prompt supplement code in [`extensions/memory-wiki/src/prompt-section.ts`](https://github.com/openclaw/openclaw/blob/main/extensions/memory-wiki/src/prompt-section.ts) is revealing.
 
 It can append a **Compiled Wiki Snapshot** with only top pages / top claims / contradiction counts / question counts.
 
@@ -244,13 +244,13 @@ That honesty is good. They know where the abstraction ends.
 
 OpenClaw’s skill framework is also strong.
 
-A skill is just a directory with `SKILL.md` frontmatter + instructions, AgentSkills-compatible.
+A skill is just a directory with [`SKILL.md`](https://docs.openclaw.ai/tools/skills) frontmatter + instructions, AgentSkills-compatible.
 
 Important behavior:
 
 - the base system prompt includes a compact `<available_skills>` list
 - each skill entry includes `name`, `description`, and `location`
-- the model is instructed to read the specific `SKILL.md` only if the skill applies
+- the model is instructed to read the specific [`SKILL.md`](https://docs.openclaw.ai/tools/skills) only if the skill applies
 - only one clearly relevant skill should be read up front
 - skills are filtered by environment/config/binary presence before prompt injection
 
@@ -302,11 +302,11 @@ I found this especially interesting in the code.
 
 OpenClaw has a memory plugin state layer with registrations for:
 
-- `registerMemoryCapability(...)`
-- `registerMemoryCorpusSupplement(...)`
-- `registerMemoryPromptSupplement(...)`
+- [`registerMemoryCapability(...)`](https://github.com/openclaw/openclaw/blob/main/src/plugins/memory-state.ts)
+- [`registerMemoryCorpusSupplement(...)`](https://github.com/openclaw/openclaw/blob/main/src/plugins/memory-state.ts)
+- [`registerMemoryPromptSupplement(...)`](https://github.com/openclaw/openclaw/blob/main/src/plugins/memory-state.ts)
 
-So the main memory plugin can own the primary runtime, while another plugin like `memory-wiki` can add:
+So the main memory plugin can own the primary runtime, while another plugin like [`memory-wiki`](https://github.com/openclaw/openclaw/tree/main/extensions/memory-wiki) can add:
 
 - extra searchable corpus results
 - extra prompt guidance
@@ -331,13 +331,13 @@ The wiki tooling is not just search/get.
 
 It includes:
 
-- `wiki_status`
-- `wiki_search`
-- `wiki_get`
-- `wiki_apply`
-- `wiki_lint`
+- [`wiki_status`](https://docs.openclaw.ai/cli/wiki)
+- [`wiki_search`](https://docs.openclaw.ai/cli/wiki)
+- [`wiki_get`](https://docs.openclaw.ai/cli/wiki)
+- [`wiki_apply`](https://docs.openclaw.ai/cli/wiki)
+- [`wiki_lint`](https://docs.openclaw.ai/cli/wiki)
 
-The important one is `wiki_apply`.
+The important one is [`wiki_apply`](https://docs.openclaw.ai/cli/wiki).
 
 Instead of telling the model to freely rewrite generated markdown, they give it a **narrow mutation surface** for:
 
@@ -351,7 +351,7 @@ That is exactly the right instinct.
 
 Freeform model editing of generated knowledge bases is how drift and formatting corruption happen.
 
-`wiki_lint` is also strong: it treats contradiction/provenance/open-question health as first-class maintenance, not afterthoughts.
+[`wiki_lint`](https://docs.openclaw.ai/cli/wiki) is also strong: it treats contradiction/provenance/open-question health as first-class maintenance, not afterthoughts.
 
 ---
 
@@ -370,9 +370,9 @@ That means they’re actively managing context bloat instead of ignoring it.
 
 ### Memory path handling
 
-In `src/memory-host-sdk/host/internal.ts`, memory file discovery is conservative:
+In [`src/memory-host-sdk/host/internal.ts`](https://github.com/openclaw/openclaw/blob/main/src/memory-host-sdk/host/internal.ts), memory file discovery is conservative:
 
-- accepts `MEMORY.md`, `memory.md`, `DREAMS.md`, and `memory/`
+- accepts [`MEMORY.md`](https://github.com/openclaw/openclaw/blob/main/MEMORY.md), [`memory.md`](https://github.com/openclaw/openclaw/blob/main/memory.md), [`DREAMS.md`](https://github.com/openclaw/openclaw/blob/main/DREAMS.md), and [`memory/`](https://github.com/openclaw/openclaw/tree/main/memory)
 - avoids symlinks
 - dedupes by realpath
 - supports extra paths
@@ -381,7 +381,7 @@ That’s boring in a good way. Boring is what you want in persistence and indexi
 
 ### Plugin registration shape
 
-`extensions/memory-wiki/index.ts` shows the plugin wiring cleanly:
+[`extensions/memory-wiki/index.ts`](https://github.com/openclaw/openclaw/blob/main/extensions/memory-wiki/index.ts) shows the plugin wiring cleanly:
 
 - register memory prompt supplement
 - register memory corpus supplement
@@ -395,7 +395,7 @@ This means wiki is not a doc-only concept; it is integrated all the way through 
 
 The wiki prompt-section code does two useful things:
 
-1. adds workflow guidance about when to use `memory_search corpus=all` vs `wiki_search/wiki_get`
+1. adds workflow guidance about when to use [`memory_search corpus=all`](https://docs.openclaw.ai/tools/memory-search) vs [`wiki_search` / `wiki_get`](https://docs.openclaw.ai/cli/wiki)
 2. optionally appends a compact compiled digest
 
 That’s subtle but important. It teaches the model **retrieval strategy**, not just tool existence.
@@ -425,7 +425,7 @@ If we merge them all into one bucket, we get noise, drift, and prompt obesity.
 For our systems, I’d use something like:
 
 - `memory/daily/` or dated notes for raw short-term context
-- `MEMORY.md` or curated profile docs for durable preferences/rules
+- [`MEMORY.md`](https://github.com/openclaw/openclaw/blob/main/MEMORY.md) or curated profile docs for durable preferences/rules
 - `wiki/` or `knowledge/` for maintained concepts/entities/projects
 - generated `cache/*.json` digests for machine-facing recall
 
@@ -548,8 +548,8 @@ I would also steal the idea of a generated small digest for prompt use.
 
 For example:
 
-- `agent-digest.json`
-- `claims.jsonl`
+- [`agent-digest.json`](https://github.com/openclaw/openclaw/tree/main/extensions/memory-wiki)
+- [`claims.jsonl`](https://github.com/openclaw/openclaw/tree/main/extensions/memory-wiki)
 - maybe `hot-questions.json`
 - maybe `stale-entities.json`
 
@@ -606,9 +606,9 @@ So the real dependency is not the bridge itself — it is the quality and stabil
 
 OpenClaw helps by injecting guidance about when to use:
 
-- `memory_search corpus=all`
-- `wiki_search`
-- `wiki_get`
+- [`memory_search corpus=all`](https://docs.openclaw.ai/tools/memory-search)
+- [`wiki_search`](https://docs.openclaw.ai/cli/wiki)
+- [`wiki_get`](https://docs.openclaw.ai/cli/wiki)
 
 That strategy guidance is crucial. Without it, the model might use the wrong retrieval path.
 
@@ -688,20 +688,20 @@ That idea is worth carrying forward.
 
 Files most worth rereading:
 
-- `docs/concepts/memory.md`
-- `docs/concepts/memory-search.md`
-- `docs/concepts/memory-builtin.md`
-- `docs/plugins/memory-wiki.md`
-- `docs/cli/wiki.md`
-- `docs/tools/skills.md`
-- `docs/tools/creating-skills.md`
-- `docs/concepts/system-prompt.md`
-- `src/plugins/memory-state.ts`
-- `src/memory-host-sdk/host/internal.ts`
-- `extensions/memory-core/index.ts`
-- `extensions/memory-wiki/index.ts`
-- `extensions/memory-wiki/src/prompt-section.ts`
-- `extensions/memory-wiki/skills/wiki-maintainer/SKILL.md`
+- [`docs/concepts/memory.md`](https://github.com/openclaw/openclaw/blob/main/docs/concepts/memory.md)
+- [`docs/concepts/memory-search.md`](https://github.com/openclaw/openclaw/blob/main/docs/concepts/memory-search.md)
+- [`docs/concepts/memory-builtin.md`](https://github.com/openclaw/openclaw/blob/main/docs/concepts/memory-builtin.md)
+- [`docs/plugins/memory-wiki.md`](https://github.com/openclaw/openclaw/blob/main/docs/plugins/memory-wiki.md)
+- [`docs/cli/wiki.md`](https://github.com/openclaw/openclaw/blob/main/docs/cli/wiki.md)
+- [`docs/tools/skills.md`](https://github.com/openclaw/openclaw/blob/main/docs/tools/skills.md)
+- [`docs/tools/creating-skills.md`](https://github.com/openclaw/openclaw/blob/main/docs/tools/creating-skills.md)
+- [`docs/concepts/system-prompt.md`](https://github.com/openclaw/openclaw/blob/main/docs/concepts/system-prompt.md)
+- [`src/plugins/memory-state.ts`](https://github.com/openclaw/openclaw/blob/main/src/plugins/memory-state.ts)
+- [`src/memory-host-sdk/host/internal.ts`](https://github.com/openclaw/openclaw/blob/main/src/memory-host-sdk/host/internal.ts)
+- [`extensions/memory-core/index.ts`](https://github.com/openclaw/openclaw/blob/main/extensions/memory-core/index.ts)
+- [`extensions/memory-wiki/index.ts`](https://github.com/openclaw/openclaw/blob/main/extensions/memory-wiki/index.ts)
+- [`extensions/memory-wiki/src/prompt-section.ts`](https://github.com/openclaw/openclaw/blob/main/extensions/memory-wiki/src/prompt-section.ts)
+- [`extensions/memory-wiki/skills/wiki-maintainer/SKILL.md`](https://github.com/openclaw/openclaw/blob/main/extensions/memory-wiki/skills/wiki-maintainer/SKILL.md)
 
 ## Practical takeaway in one page
 
