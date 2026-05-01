@@ -68,18 +68,29 @@ For each daily run:
 
 ## Required note structure
 
+Every note should feel like a **repo dissection**, not a loose essay.
+
+Use this structure by default unless the project strongly demands a variation:
+
 ```md
 # <Repo Name>
 
 - Repo: <owner/repo>
 - URL: <url>
 - Date: <YYYY-MM-DD>
+- Repo snapshot studied: <branch/commit>
 - Why picked today: <1-3 lines>
 
+## Executive summary
 ## What they built
 ## Why it matters
-## How it works
-## Architecture / components
+## Repo shape at a glance
+## Layered architecture dissection
+### High-level system shape
+### Main layers
+### Request / data / control flow
+## Key directories and files
+## Important components
 ## Important knobs / configs / extension points
 ## Practical questions and answers
 ## What is smart
@@ -89,7 +100,14 @@ For each daily run:
 ## Bottom line
 ```
 
-You can add sections if the project demands it.
+Notes on the structure:
+
+- **Repo shape at a glance** should summarize the repository hierarchically: major top-level directories, packages, apps, services, libraries, docs, infra, tests, generated assets, and how they relate.
+- **Layered architecture dissection** should explain the repo structurally at multiple levels: high-level system intent, major layers/subsystems, what each layer does, and how the layers connect.
+- **Key directories and files** should identify the concrete source paths that matter most for understanding the system.
+- **Important components** should call out specific modules/classes/services/scripts/files that are central to how the project works.
+
+You can add sections if the project demands it, but do not skip the structural dissection.
 
 ---
 
@@ -99,6 +117,9 @@ Use the source-study framework.
 
 Always ask:
 - what is this project actually doing?
+- what is the repository shape?
+- what are the main layers and boundaries?
+- what source files/components are carrying the real weight?
 - what is creative?
 - what is smart?
 - what can we learn / steal?
@@ -115,6 +136,7 @@ And also answer practical builder questions like:
 - how could we apply the good parts to our own work?
 
 The Q&A section must be meaningful, not filler.
+The structural sections must be concrete, with links to the relevant GitHub source paths.
 
 ---
 
@@ -126,6 +148,10 @@ The Q&A section must be meaningful, not filler.
 - prefer mechanism over vibes
 - prefer architecture over slogans
 - include concrete components, flows, and knobs
+- dissect the repo hierarchically and structurally, not just conceptually
+- identify the major layers, packages, directories, and key source files
+- when you mention a file or directory in the note, link it to the actual GitHub source URL for that path
+- prefer direct source links to vague references like “the server code” or “the core package”
 - point out flaws honestly
 - note what is beautiful, fun, or delightfully engineered when it exists
 - write like a builder talking to another builder, not a tech journalist farming SEO sludge

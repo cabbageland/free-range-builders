@@ -43,3 +43,10 @@ See:
 - `DAILY_REPO_TASK.md`
 
 That file defines the recurring workflow and grounding for the daily 9:00 AM repo study task.
+
+Current study-note bias:
+- make the notes feel like a **repo dissection**
+- describe the repository hierarchically and structurally
+- explain high-level layers, subsystem boundaries, and what each layer does
+- identify the concrete source files/directories that matter most
+- whenever a file or directory is mentioned in the note, link it to the actual GitHub source path
