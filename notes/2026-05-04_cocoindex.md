@@ -3,224 +3,208 @@
 - Repo: `cocoindex-io/cocoindex`
 - URL: https://github.com/cocoindex-io/cocoindex
 - Date: 2026-05-04
-- Repo snapshot studied: `main@ab0893e4e38fccdb29370ac4a5dc6e252550dabb`
-- Why picked today: It is AI-relevant, hot right now, and more structurally interesting than most "agent memory" repos. Under the marketing layer there is a real attempt to build a declarative, incremental indexing engine for long-horizon agent context, with a Python SDK wrapped around a Rust execution core.
+- Repo snapshot studied: `main@31ef7059195903dd8b7501b4cbb9946f9ba42e45`
+- Why picked today: It is genuinely hot, clearly AI-relevant, and not just another “agent wrapper.” Under the glossy README there is a real systems move: a Python declarative API backed by a Rust incremental engine that tries to make live agent context cheap, explainable, and continuously fresh.
 
 ## Executive summary
-`cocoindex` is not mainly a collection of RAG examples. It is an opinionated incremental dataflow engine for keeping derived AI context fresh.
+`cocoindex` is an incremental indexing framework for AI workloads. The pitch is RAG and agent memory, but the actual product is a stateful dataflow engine: you declare transformations in Python, and a Rust runtime tracks lineage, memoization, progress, target state, and live updates so only the delta re-runs.
 
-The central idea is: developers declare the desired target state in Python, and the runtime figures out what needs to be inserted, updated, deleted, or skipped when either source data or transformation code changes. The repo’s real product is that **state-driven incremental execution model**, not the vector DB connectors, not the examples, and not the glossy README.
-
-The strongest architectural move is that CocoIndex treats AI indexing like a materialized-view system with per-component lineage and memoization. That is a better frame than the usual "run another embedding pipeline nightly" story.
+The key insight is that this repo is not really “about embeddings.” It is about **incremental recomputation as infrastructure**. The Python layer is the ergonomic DSL. The Rust layer is the real moat.
 
 ## What they built
-They built a multi-layer framework with five notable parts:
+They built a hybrid system with four major parts:
 
-- a Python authoring surface for apps, processing components, target declarations, memoized transforms, and runtime control in [`python/cocoindex/_internal/api.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/api.py), [`python/cocoindex/_internal/app.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/app.py), and [`python/cocoindex/_internal/function.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/function.py)
-- a Rust execution core exposed through PyO3 in [`rust/py/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/rust/py), backed by engine/state crates under [`rust/core/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/rust/core) and utility crates under [`rust/utils/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/rust/utils)
-- a connector surface for sources and targets like local files, Postgres, Kafka, Qdrant, LanceDB, Neo4j, S3, and others under [`python/cocoindex/connectors/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/connectors)
-- an ops/resources layer for chunking, embedding, schemas, file abstractions, and typed resources under [`python/cocoindex/ops/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/ops) and [`python/cocoindex/resources/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/resources)
-- a docs-plus-examples distribution strategy, with a full docs site in [`docs/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/docs) and 20+ concrete pipelines in [`examples/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/examples)
+- a Python-facing declarative app and function API in [`python/cocoindex/_internal/api.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/_internal/api.py), [`python/cocoindex/_internal/app.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/_internal/app.py), and [`python/cocoindex/_internal/function.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/_internal/function.py)
+- a Rust execution engine that owns components, runtime state, progress tracking, cancellation, and target reconciliation under [`rust/core/src/engine/`](https://github.com/cocoindex-io/cocoindex/tree/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/core/src/engine)
+- connector and target libraries for sources like the local filesystem and stores like Postgres in [`python/cocoindex/connectors/`](https://github.com/cocoindex-io/cocoindex/tree/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/connectors)
+- a large examples-and-docs layer that acts like the real product surface for users in [`examples/`](https://github.com/cocoindex-io/cocoindex/tree/31ef7059195903dd8b7501b4cbb9946f9ba42e45/examples) and [`docs/src/`](https://github.com/cocoindex-io/cocoindex/tree/31ef7059195903dd8b7501b4cbb9946f9ba42e45/docs/src)
 
-The repo is trying to become the infrastructure layer behind "always fresh context" for agents, not just a demo repo for embeddings.
+So the repo is closer to “React for persistent dataflows” than to “LangChain for indexing.”
 
 ## Why it matters
-A lot of agent-data tooling still assumes batch rebuilds, stateless extraction, and vague promises about freshness. CocoIndex matters because it attacks the expensive part directly: keeping derived AI context synchronized as sources and transformation logic evolve.
+A lot of AI infra repos stop at one-shot pipelines. That is fine for demos, but bad for real agent context, where the expensive part is not the first build, it is keeping derived state fresh after small source and code changes.
 
-If their model works in practice, the win is not merely speed. The win is **operational sanity**:
-- smaller recomputation surface
-- lower embedding and LLM cost
-- clearer lineage from source bytes to target rows
-- less custom glue for deletes, updates, and stale state cleanup
+CocoIndex matters because it treats freshness, lineage, and partial recomputation as first-class. The repo is trying to make this workflow normal:
 
-That is a real infrastructure problem, and it is more durable than most wrapper-layer AI tools.
+source changes or code changes -> detect affected components -> reuse what is still valid -> re-run only the impacted work -> keep targets in sync.
+
+That is a much more serious problem than “split text and embed it.”
 
 ## Repo shape at a glance
-Top-level shape:
+Top-level structure:
 
-- [`python/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python), the user-facing SDK and Python-side orchestration
-  - [`python/cocoindex/_internal/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal), the real framework API, app model, function wrapping, target state logic, runner, environment, serialization, and live-component plumbing
-  - [`python/cocoindex/connectors/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/connectors), concrete source/target integrations
-  - [`python/cocoindex/connectorkits/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/connectorkits), shared connector primitives like fingerprinting and target lifecycle helpers
-  - [`python/cocoindex/ops/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/ops), reusable transforms such as text splitting and embedding adapters
-  - [`python/cocoindex/resources/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/resources), typed domain objects like chunks, files, IDs, embedders, and schemas
-- [`rust/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/rust), the engine and Python bridge
-  - [`rust/core/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/rust/core), runtime/engine/state foundations
-  - [`rust/py/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/rust/py), PyO3 bridge and Python callback/runtime integration
-  - [`rust/ops_text/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/rust/ops_text), syntax-aware text and code splitting helpers
-- [`examples/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/examples), broad recipe catalog, from code embedding to PDFs, graphs, Kafka, and meeting intelligence
-- [`docs/src/content/docs/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/docs/src/content/docs), the conceptual and connector documentation
-- [`.github/workflows/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/.github/workflows), CI, docs, release, and type-check automation
+- [`python/cocoindex/`](https://github.com/cocoindex-io/cocoindex/tree/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex), the public Python package and most user-facing APIs
+  - [`python/cocoindex/_internal/`](https://github.com/cocoindex-io/cocoindex/tree/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/_internal), the real runtime-facing Python bridge layer
+  - [`python/cocoindex/connectors/`](https://github.com/cocoindex-io/cocoindex/tree/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/connectors), sources and targets for filesystems, Postgres, vector stores, queues, graph DBs, and cloud storage
+  - [`python/cocoindex/ops/`](https://github.com/cocoindex-io/cocoindex/tree/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/ops), reusable transforms like chunking and language detection
+- [`rust/core/`](https://github.com/cocoindex-io/cocoindex/tree/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/core), the incremental engine core
+- [`rust/py/`](https://github.com/cocoindex-io/cocoindex/tree/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/py), the PyO3 bridge that exposes the Rust engine into Python
+- [`rust/ops_text/`](https://github.com/cocoindex-io/cocoindex/tree/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/ops_text), native text operations behind the Python text helpers
+- [`examples/`](https://github.com/cocoindex-io/cocoindex/tree/31ef7059195903dd8b7501b4cbb9946f9ba42e45/examples), the best place to understand intended use cases
+- [`docs/src/`](https://github.com/cocoindex-io/cocoindex/tree/31ef7059195903dd8b7501b4cbb9946f9ba42e45/docs/src), Astro docs site
+- [`skills/cocoindex/`](https://github.com/cocoindex-io/cocoindex/tree/31ef7059195903dd8b7501b4cbb9946f9ba42e45/skills/cocoindex), an AI-coding-agent assist layer, which tells you the team is explicitly targeting agent-assisted development
 
-The shape says this is a framework repo first, a docs/examples repo second, and a connector zoo third.
+The shape is healthy. The examples are abundant, but the engine is still clearly centralized instead of being scattered into vague framework mush.
 
 ## Layered architecture dissection
 ### High-level system shape
-The system shape is:
-source state -> Python-declared processing components and target states -> Rust-backed incremental engine -> connector reconciliation into external stores -> optional live reprocessing on source or code change.
+At a high level, the system is:
 
-That is a stronger shape than the typical AI ETL project, because it starts with state reconciliation instead of starting with one-off ingestion scripts.
+Python app declaration -> Python decorator/runtime bridge -> Rust component engine -> source scanning / function execution / memo reuse -> target reconciliation -> optional live watching.
+
+The important thing is that CocoIndex does not just call user code directly. It wraps user functions as engine components with stable paths, context, memo fingerprints, and target-state semantics.
 
 ### Main layers
-**1. Authoring and public API layer**
-- [`python/cocoindex/__init__.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/__init__.py)
-- [`python/cocoindex/_internal/api.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/api.py)
-- [`python/cocoindex/_internal/app.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/app.py)
+**1. App and orchestration layer**
+- [`python/cocoindex/_internal/app.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/_internal/app.py)
+- [`rust/core/src/engine/app.rs`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/core/src/engine/app.rs)
 
-This layer gives the developer the illusion that they are just writing Python functions and declaring outputs. `App`, `mount`, `mount_each`, `mount_target`, runtime start/stop, and update handles all live here.
+This is where updates and drops are started, tracked, cancelled, and watched. On the Python side, `UpdateHandle` exposes progress snapshots and results. On the Rust side, `AppUpdateOptions`, `AppOpHandle`, and `App::update` own the real lifecycle.
 
-The important thing is that the API is designed around **components and target states**, not around "jobs" or "tasks". That is the repo’s whole mental model.
+This layer matters because it shows the repo is not a plain library call. It is an operation-oriented engine with long-running stateful work.
 
-**2. Function, component, and memoization layer**
-- [`python/cocoindex/_internal/function.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/function.py)
-- [`python/cocoindex/_internal/live_component.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/live_component.py)
-- [`python/cocoindex/_internal/memo_fingerprint.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/memo_fingerprint.py)
-- [`python/cocoindex/_internal/component_ctx.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/component_ctx.py)
+**2. Function wrapping, memoization, and execution-context layer**
+- [`python/cocoindex/_internal/function.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/_internal/function.py)
+- [`python/cocoindex/_internal/runner.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/_internal/runner.py)
+- [`rust/core/src/engine/function.rs`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/core/src/engine/function.rs)
+- [`rust/core/src/engine/execution.rs`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/core/src/engine/execution.rs)
 
-This is where the framework earns its keep. Functions become tracked processing units, component paths become stable identities, and memoization keys become the mechanism for skipping unchanged work.
+This layer is the heart of the product idea. Decorated functions are fingerprinted, contextualized, memo-aware, and optionally serialized through runners. The GPU runner is especially telling: instead of pretending GPU work is “just another async call,” they give it an execution model with queueing and optional subprocess isolation.
 
-This is also the layer that makes CocoIndex feel more like React or incremental build systems than like Airflow.
+**3. Component graph and incremental-state layer**
+- [`rust/core/src/engine/component.rs`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/core/src/engine/component.rs)
+- [`rust/core/src/engine/context.rs`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/core/src/engine/context.rs)
+- [`rust/core/src/state/stable_path.rs`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/core/src/state/stable_path.rs)
+- [`rust/core/src/engine/logic_registry.rs`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/core/src/engine/logic_registry.rs)
 
-**3. Target-state and reconciliation layer**
-- [`python/cocoindex/_internal/target_state.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/target_state.py)
-- [`python/cocoindex/connectorkits/target.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/connectorkits/target.py)
-- [`docs/src/content/docs/programming_guide/target_state.mdx`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/docs/src/content/docs/programming_guide/target_state.mdx)
+This is where the framework becomes a real incremental engine instead of a convenience wrapper. Stable paths and logic tracking let the runtime reason about identity and code changes. That is the machinery you need if you want “only the delta” to mean something real.
 
-This is the core abstraction. You do not imperatively write "insert this row" as the main programming model. You declare the target state, and the engine reconciles differences.
+**4. Source, live-feed, and connector layer**
+- [`python/cocoindex/connectors/localfs/_source.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/connectors/localfs/_source.py)
+- [`rust/core/src/engine/live_component.rs`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/core/src/engine/live_component.rs)
+- [`python/cocoindex/_internal/api.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/_internal/api.py)
 
-That is what lets them support deletes, updates, and code-driven invalidation without forcing every app author to hand-roll CDC logic.
+The local filesystem walker is a good example of the repo’s style. It supports both catch-up iteration and live watch mode, and exposes keyed item streams that fit naturally into `mount_each()` processing. This is a concrete sign that the team designed for continuously updated sources, not just static backfills.
 
-**4. Rust runtime and Python bridge layer**
-- [`rust/py/src/lib.rs`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/rust/py/src/lib.rs)
-- [`rust/py/src/runtime.rs`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/rust/py/src/runtime.rs)
-- [`rust/py/src/app.rs`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/rust/py/src/app.rs)
-- [`rust/core/src/lib.rs`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/rust/core/src/lib.rs)
+**5. Target-state and sink layer**
+- [`python/cocoindex/connectors/postgres/_target.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/connectors/postgres/_target.py)
+- [`rust/core/src/engine/target_state.rs`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/core/src/engine/target_state.rs)
+- [`rust/core/src/state/target_state_path.rs`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/core/src/state/target_state_path.rs)
 
-This layer handles runtime initialization, async interop, cancellation, callback bridging, and the lower-level execution machinery.
+The repo does not think in terms of “return a dataset.” It thinks in terms of durable target state that must be reconciled, diffed, created, updated, and deleted. The Postgres target’s two-level model, table first and rows second, is a nice concrete example.
 
-The repo’s sales pitch says "Python, 5 min", but the production bet is clearly "Rust underneath so the control plane does not melt when the workload gets ugly."
+**6. Developer-facing ops and examples layer**
+- [`python/cocoindex/cli.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/cli.py)
+- [`examples/code_embedding/main.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/examples/code_embedding/main.py)
+- [`examples/conversation_to_knowledge/`](https://github.com/cocoindex-io/cocoindex/tree/31ef7059195903dd8b7501b4cbb9946f9ba42e45/examples/conversation_to_knowledge)
+- [`docs/src/content/docs/`](https://github.com/cocoindex-io/cocoindex/tree/31ef7059195903dd8b7501b4cbb9946f9ba42e45/docs/src/content/docs)
 
-**5. Connectors and execution surface layer**
-- [`python/cocoindex/connectors/localfs/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/connectors/localfs)
-- [`python/cocoindex/connectors/postgres/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/connectors/postgres)
-- [`python/cocoindex/connectors/kafka/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/connectors/kafka)
-- [`python/cocoindex/connectors/neo4j/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/connectors/neo4j)
-- [`python/cocoindex/connectors/qdrant/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/connectors/qdrant)
-
-These connectors make the framework practical. They also reveal the intended product scope: AI context pipelines that can terminate in relational tables, vectors, graphs, files, queues, and blob stores.
-
-The breadth is impressive, but it also creates maintenance drag.
-
-**6. Docs/examples/productization layer**
-- [`docs/src/content/docs/programming_guide/core_concepts.mdx`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/docs/src/content/docs/programming_guide/core_concepts.mdx)
-- [`docs/src/content/docs/getting_started/quickstart.mdx`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/docs/src/content/docs/getting_started/quickstart.mdx)
-- [`examples/code_embedding/main.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/examples/code_embedding/main.py)
-- [`examples/conversation_to_knowledge/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/examples/conversation_to_knowledge)
-- [`examples/hn_trending_topics/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/examples/hn_trending_topics)
-
-This layer is doing two jobs at once: education and distribution. It is how they explain the mental model, but it is also how they demonstrate breadth to prospective users and enterprise buyers.
+This is partly productization and partly go-to-market, but it also reveals design intent. The examples are not throwaway toy scripts. They are the quickest way to see which abstractions the team thinks are strong enough to reuse.
 
 ### Request / data / control flow
-A representative pipeline flow looks like this:
-1. the user defines an app and main function via [`python/cocoindex/_internal/app.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/app.py)
-2. source items are enumerated via a connector such as [`python/cocoindex/connectors/localfs/_source.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/connectors/localfs/_source.py)
-3. per-item work is mounted with `mount_each` from [`python/cocoindex/_internal/api.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/api.py), creating one processing component per stable key
-4. transforms like syntax-aware chunking run through helpers such as [`python/cocoindex/ops/text.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/ops/text.py) and Rust text ops in [`rust/ops_text/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/rust/ops_text)
-5. outputs are declared as target states or table rows through connectors like [`python/cocoindex/connectors/postgres/_target.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/connectors/postgres/_target.py)
-6. the runtime bridges into Rust via [`rust/py/src/runtime.rs`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/rust/py/src/runtime.rs), computes what changed, and reconciles target state
-7. on later runs, unchanged components and memoized sub-functions can be skipped, while changed rows/files/chunks are selectively recomputed, as described in [`docs/src/content/docs/programming_guide/core_concepts.mdx`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/docs/src/content/docs/programming_guide/core_concepts.mdx)
+A typical flow looks like this:
 
-That is the real product loop.
+1. a user defines an app and decorated functions in Python via [`python/cocoindex/_internal/api.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/_internal/api.py)
+2. the app is wrapped in [`python/cocoindex/_internal/app.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/_internal/app.py), which exposes update handles and progress watchers
+3. user functions are transformed into engine processors in [`python/cocoindex/_internal/function.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/_internal/function.py)
+4. the Rust app engine launches an update task in [`rust/core/src/engine/app.rs`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/core/src/engine/app.rs)
+5. components execute through the engine graph, reusing memoized results when logic and inputs still match
+6. sources such as the local filesystem emit keyed items through connectors like [`python/cocoindex/connectors/localfs/_source.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/connectors/localfs/_source.py)
+7. targets such as Postgres reconcile durable state via [`python/cocoindex/connectors/postgres/_target.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/connectors/postgres/_target.py)
+8. if live mode is enabled, watchers continue feeding incremental changes instead of treating the run as a one-shot batch
+
+That is a coherent control loop. The repo’s real thesis is that indexing should behave like a maintained application, not a nightly job.
 
 ## Key directories and files
-- [`pyproject.toml`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/pyproject.toml): concise summary of product intent, packaging, optional connector dependencies, and the Rust-backed maturin build
-- [`python/cocoindex/_internal/api.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/api.py): public center of gravity for mounting, runtime control, target mounting, and concurrent component execution
-- [`python/cocoindex/_internal/app.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/app.py): app lifecycle, update handles, drop semantics, and sync/async execution surfaces
-- [`python/cocoindex/_internal/target_state.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/target_state.py): likely the most important conceptual file after the API, because target-state reconciliation is the whole thesis
-- [`python/cocoindex/cli.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/cli.py): useful because it shows real operational concerns like graceful cancellation, app discovery, environment selection, and persisted state listing
-- [`rust/py/src/runtime.rs`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/rust/py/src/runtime.rs): the runtime bridge, cancellation plumbing, and Python callback mediation
-- [`examples/code_embedding/main.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/examples/code_embedding/main.py): a very representative example that shows the intended developer ergonomics
-- [`docs/src/content/docs/programming_guide/core_concepts.mdx`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/docs/src/content/docs/programming_guide/core_concepts.mdx): the clearest statement of the repo’s actual mental model
+If you want the fastest path to understanding the repo, study these first:
+
+- [`pyproject.toml`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/pyproject.toml), because it shows the Python package boundaries, optional connector extras, and the maturin bridge into Rust
+- [`Cargo.toml`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/Cargo.toml), because it reveals the Rust workspace split and that `rust/core` is the center of gravity
+- [`python/cocoindex/_internal/app.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/_internal/app.py), for update handles and progress semantics
+- [`python/cocoindex/_internal/function.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/_internal/function.py), for memo, fingerprint, and wrapper behavior
+- [`python/cocoindex/_internal/runner.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/_internal/runner.py), for serialized runner execution and subprocess isolation
+- [`rust/core/src/engine/app.rs`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/core/src/engine/app.rs), for update/drop lifecycle
+- [`rust/core/src/engine/component.rs`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/core/src/engine/component.rs), for the component orchestration model
+- [`rust/core/src/engine/target_state.rs`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/core/src/engine/target_state.rs), for reconciliation semantics
+- [`python/cocoindex/connectors/localfs/_source.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/connectors/localfs/_source.py), for live source behavior
+- [`python/cocoindex/connectors/postgres/_target.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/connectors/postgres/_target.py), for one of the most concrete target implementations
+- [`python/cocoindex/ops/text.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/ops/text.py), for the clean Python wrapper over native chunking and code-language detection
+- [`examples/`](https://github.com/cocoindex-io/cocoindex/tree/31ef7059195903dd8b7501b4cbb9946f9ba42e45/examples), because the examples encode the supported mental model better than the marketing copy does
 
 ## Important components
-**The component mounting model**  
-`mount`, `use_mount`, and `mount_each` in [`python/cocoindex/_internal/api.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/api.py) are the bones of the system. They define how work gets broken into independently refreshable units. Without this, everything else becomes conventional batch ETL.
-
-**Target-state declaration and reconciliation**  
-The logic around target states in [`python/cocoindex/_internal/target_state.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/target_state.py) is the differentiator. This is where CocoIndex stops being a helper library and becomes an engine.
-
-**The Rust-Python runtime seam**  
-The PyO3 boundary in [`rust/py/src/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/rust/py) matters because the project is selling Python ergonomics without trusting Python alone as the execution substrate.
-
-**Syntax-aware chunking ops**  
-[`python/cocoindex/ops/text.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/ops/text.py) plus [`rust/ops_text/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/rust/ops_text) are not the whole product, but they are a smart wedge. If you want to win code/document indexing users, chunking quality and position tracking matter more than branding.
-
-**The examples catalog as product surface**  
-The 28-example tree under [`examples/`](https://github.com/cocoindex-io/cocoindex/tree/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/examples) is doing serious work. It doubles as smoke test, onboarding path, and market segmentation map.
+- `UpdateHandle` in [`python/cocoindex/_internal/app.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/_internal/app.py), which exposes a sane progress API instead of making users poll raw engine state
+- `_ENV_MAX_INFLIGHT_COMPONENTS` and `_DEFAULT_MAX_INFLIGHT_COMPONENTS` in [`python/cocoindex/_internal/app.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/_internal/app.py), which show the framework already expects scale and backpressure tuning
+- `GPURunner` in [`python/cocoindex/_internal/runner.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/_internal/runner.py), which serializes GPU work and can isolate it in a subprocess
+- `AppUpdateOptions` and `AppOpHandle` in [`rust/core/src/engine/app.rs`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/core/src/engine/app.rs), which make live mode and full reprocess explicit runtime concepts
+- `DirWalker.items()` and `_LiveDirItems.watch()` in [`python/cocoindex/connectors/localfs/_source.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/connectors/localfs/_source.py), which make keyed live source updates feel native
+- the Postgres type-mapping and target-state machinery in [`python/cocoindex/connectors/postgres/_target.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/connectors/postgres/_target.py), which turns Python data types into actual durable sinks
+- `detect_code_language`, `SeparatorSplitter`, and `RecursiveSplitter` in [`python/cocoindex/ops/text.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/ops/text.py), which are small but important because they show a nice Python-over-Rust boundary
 
 ## Important knobs / configs / extension points
-- optional dependency groups in [`pyproject.toml`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/pyproject.toml) determine which connector families you actually install
-- environment and DB-path configuration live around [`python/cocoindex/_internal/environment.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/environment.py) and [`python/cocoindex/_internal/setting.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/setting.py)
-- `App.update(full_reprocess=..., live=...)` in [`python/cocoindex/_internal/app.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/app.py) is a major operational knob because it controls whether you trust cached lineage or force a complete rerun
-- function-level memoization and custom memo-key registration live in [`python/cocoindex/_internal/memo_fingerprint.py`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/python/cocoindex/_internal/memo_fingerprint.py)
-- live components and background refresh behavior are documented in [`docs/src/content/docs/advanced_topics/live_component.mdx`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/docs/src/content/docs/advanced_topics/live_component.mdx)
-- connector extensibility is formalized in docs like [`docs/src/content/docs/advanced_topics/custom_target_connector.mdx`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/docs/src/content/docs/advanced_topics/custom_target_connector.mdx)
+- [`pyproject.toml`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/pyproject.toml) exposes a wide extras matrix, which is how the repo avoids forcing every connector dependency into the base install
+- `COCOINDEX_MAX_INFLIGHT_COMPONENTS` in [`python/cocoindex/_internal/app.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/_internal/app.py), a concurrency/backpressure knob for component execution
+- `COCOINDEX_RUN_GPU_IN_SUBPROCESS` in [`python/cocoindex/_internal/runner.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/_internal/runner.py), a pragmatic isolation switch for unstable GPU workloads
+- `AppUpdateOptions.full_reprocess` and `.live` in [`rust/core/src/engine/app.rs`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/rust/core/src/engine/app.rs), the two big mode toggles that define whether this behaves like a rebuild or a continuously updating app
+- `PgType` in [`python/cocoindex/connectors/postgres/_target.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/connectors/postgres/_target.py), a clean extension point for schema control
+- `CustomLanguageConfig` in [`python/cocoindex/ops/text.py`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/python/cocoindex/ops/text.py), a nice escape hatch for domain-specific chunking
 
 ## Practical questions and answers
-**What is this project actually optimizing for?**  
-Fresh derived context with minimal recomputation. Not just easy ingestion.
+**What is this project actually optimizing for?**
 
-**What assumption does the system make?**  
-That your outputs can be modeled as declarative target state and that the framework can maintain stable identities and lineage for the work graph.
+Freshness and incremental maintenance, not raw ingestion throughput alone. The recurring pattern everywhere is “what can we avoid recomputing?”
 
-**Where does this feel strongest?**  
-Document/code indexing, conversation extraction, graph/vector sync, and any AI pipeline where deletes and partial updates are painful.
+**What assumption does the system make?**
 
-**Where might it fail in production?**  
-At the edges where real-world connectors are messy, schemas drift, source identities are unstable, or app authors cannot cleanly express their logic as declarative state transitions.
+That your transformations can be expressed as structured components with stable identity and replayable semantics. If your pipeline is chaotic, side-effect-heavy, or impossible to fingerprint, the model weakens.
 
-**Is this more framework than product?**  
-Yes, today. The polished docs and examples are selling a framework thesis, not a shrink-wrapped end-user product.
+**Where would it break first in production?**
 
-**What is the cleverest idea here?**  
-Treating AI indexing like an incremental materialized-view system rather than a cron-driven embedding job.
+In the gray zone between pure dataflow and messy user code. Connectors, LLM calls, GPU work, and external services all create nondeterminism. The framework can track a lot, but it cannot magically make impure code incremental-safe.
 
-**What would I distrust?**  
-Any broad claim that all these connectors and patterns are equally production-hardened. The dependency matrix is large, and the repo is still marked alpha in [`pyproject.toml`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/pyproject.toml).
+**Is the Python-over-Rust split justified?**
+
+Yes. Python is the right surface for authoring flows, but the engine work, concurrency, state tracking, and target reconciliation benefit from Rust. This is one of the better reasons to go hybrid.
+
+**What is hardest to copy?**
+
+The stable-path, memo, and target-state machinery in the engine. Fancy examples are easy to clone. A trustworthy incremental core is not.
+
+**What is probably more marketing than reality?**
+
+The broad “any source, any target, any scale” vibe in the README. The architecture is real, but practical reliability will still depend heavily on connector maturity and the specific workloads people try to push through it.
 
 ## What is smart
-- The conceptual framing in [`docs/src/content/docs/programming_guide/core_concepts.mdx`](https://github.com/cocoindex-io/cocoindex/blob/ab0893e4e38fccdb29370ac4a5dc6e252550dabb/docs/src/content/docs/programming_guide/core_concepts.mdx) is genuinely good. "TargetState = Transform(SourceState)" is simple enough to teach and powerful enough to build around.
-- The Python API is reasonably elegant given the ambition. `mount_each` plus declarative targets is a good developer story.
-- Keeping the core engine in Rust while exposing a Python-native surface is the right bet for this category.
-- The repo has respectable breadth without collapsing into a random pile of demos. The examples are aligned to the core thesis.
-- The CLI shows they thought at least somewhat about real runtime operations, cancellation, and persisted app state.
+- The Python API is thin enough that the repo does not hide where the real power lives.
+- The engine clearly models long-running operations, progress, and cancellation instead of treating them as afterthoughts.
+- The live filesystem source is practical and well aligned with the incremental thesis.
+- The GPU runner design is sober. Serializing GPU execution and allowing subprocess isolation is the kind of unglamorous decision that saves pain later.
+- The connector extras strategy in [`pyproject.toml`](https://github.com/cocoindex-io/cocoindex/blob/31ef7059195903dd8b7501b4cbb9946f9ba42e45/pyproject.toml) is sensible for a wide-surface infra library.
+- The repo ships a lot of examples, which is not just marketing. It is how a framework like this proves its abstractions are reusable.
 
 ## What is flawed or weak
-- The README is massively over-marketed. The diagrams and sales language sometimes obscure the actual engineering thesis rather than clarifying it.
-- The connector surface is already wide enough to create serious maintenance risk. Broad optional-dependency matrices tend to age badly.
-- There is a lot of conceptual surface area: apps, environments, processing components, live components, target states, memo keys, contexts, runners, connectors. That can become a steep adoption cliff.
-- The repo appears to be trying to serve open-source framework users, AI-coding-agent users, and enterprise buyers at once. That can blur priorities.
-- "Alpha" plus many backends means prudence is warranted before betting critical production pipelines on it.
+- The README is heavily merchandised. It sells hard before it explains. That is fine for growth, but it obscures the genuinely interesting engine underneath.
+- The repo surface is broad: many connectors, many examples, docs, skills, CLI, and a hybrid runtime. Breadth is useful, but it increases the chance that some connectors are much more mature than others.
+- The system’s promise depends on users writing relatively well-behaved transformation code. That is an unavoidable weakness of this category.
+- The framework still needs trust in its invalidation logic. If incremental correctness is even slightly wrong, users will get stale or inconsistent state with false confidence.
+- Some of the repo’s conceptual vocabulary is dense. New users may understand the examples before they understand the model.
 
 ## What we can learn / steal
-- Model derived AI context as **reconciled state**, not as append-only batch output.
-- Break work into stable-keyed processing components so you can re-run only the affected subgraph.
-- Memoize expensive transforms below the whole-pipeline level. Chunk embedding is the obvious example.
-- Keep source-to-target lineage first class if you want debuggable RAG infrastructure.
-- Use examples as both onboarding and product-shaping pressure. A framework gets real when the examples stay coherent.
+- Treat incremental recomputation as a product feature, not an optimization pass.
+- Model target state explicitly instead of pretending outputs are just blobs.
+- Give long-running pipeline operations first-class progress and cancellation APIs.
+- Keep the user-facing DSL high-level, but push the fragile concurrency/state machinery into a stricter runtime.
+- Build examples that correspond to real deployment patterns, not just “hello world” demos.
 
 ## How we could apply it
-If we were building our own internal context pipeline system, I would steal the following patterns:
-- a per-entity component model, where each source object owns a small target-state island
-- a target reconciliation abstraction that standardizes inserts, updates, and deletes
-- hash-based memo invalidation for expensive transforms whose inputs and code are stable
-- a hard separation between ergonomic authoring language and performance-sensitive runtime core
+If we were building our own agent-data system, I would steal three ideas immediately:
 
-I would probably **not** copy the current marketing-heavy presentation. I would also be careful about connector sprawl until the core engine and two or three flagship integrations felt unquestionably solid.
+1. the split between a friendly Python declaration layer and a stricter engine core
+2. stable identity plus memo-aware invalidation as the backbone of incremental updates
+3. target reconciliation as a first-class abstraction, especially for DB-backed outputs
+
+I would be more cautious about copying the whole ambition envelope at once. Better to start with one source family, one target family, and one rock-solid invalidation story than to imitate the whole connector matrix too early.
 
 ## Bottom line
-CocoIndex is one of the more interesting AI-infra repos on the board because it attacks freshness, recomputation cost, and lineage as first-class design problems.
+CocoIndex is one of the more serious AI-data repos in the current wave because it is solving the right boring problem.
 
-The key thing to understand is that this repo is not best thought of as a RAG toolkit. It is a **state-reconciliation engine for continuously derived AI context**, with RAG, code search, knowledge graphs, and agent memory as downstream use cases.
-
-That is a real idea. It is smarter than most of the surrounding hype. The main question is not whether the idea is good. It is whether the team can keep the engine sharp while resisting connector and enterprise-surface bloat.
+The key insight is simple: the valuable thing is not “RAG pipelines.” The valuable thing is a runtime that can keep derived agent context continuously correct and cheap as sources and code change. This repo actually seems to understand that.
