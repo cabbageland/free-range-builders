@@ -142,12 +142,17 @@ A simplified flow looks like this:
 
 [`GraphView.tsx`](https://github.com/Lum1104/Understand-Anything/blob/26edf61856fa476e466bda1814819a266a293c47/understand-anything-plugin/packages/dashboard/src/components/GraphView.tsx) is what stops the graph from becoming an unreadable node dump. It is where usability earns or loses the whole thesis.
 
+**State model that preserves multiple views of the same graph**
+
+[`packages/dashboard/src/store.ts`](https://github.com/Lum1104/Understand-Anything/blob/26edf61856fa476e466bda1814819a266a293c47/understand-anything-plugin/packages/dashboard/src/store.ts) does more than hold UI toggles. It keeps separate indexes for first-match layer navigation versus all-layer membership filtering. That is a small but serious sign that the team has already hit real graph-navigation edge cases and encoded them explicitly instead of pretending every node belongs to one clean place.
+
 ## Important knobs / configs / extension points
 - multi-platform install paths in [`install.sh`](https://github.com/Lum1104/Understand-Anything/blob/26edf61856fa476e466bda1814819a266a293c47/install.sh)
 - command behavior and analysis options in [`understand-anything-plugin/skills/understand/SKILL.md`](https://github.com/Lum1104/Understand-Anything/blob/26edf61856fa476e466bda1814819a266a293c47/understand-anything-plugin/skills/understand/SKILL.md)
 - parser and extractor extension points in [`understand-anything-plugin/packages/core/src/plugins/`](https://github.com/Lum1104/Understand-Anything/tree/26edf61856fa476e466bda1814819a266a293c47/understand-anything-plugin/packages/core/src/plugins)
 - language registration in [`understand-anything-plugin/packages/core/src/languages/`](https://github.com/Lum1104/Understand-Anything/tree/26edf61856fa476e466bda1814819a266a293c47/understand-anything-plugin/packages/core/src/languages)
-- dashboard interaction state in [`understand-anything-plugin/packages/dashboard/src/store.ts`](https://github.com/Lum1104/Understand-Anything/blob/26edf61856fa476e466bda1814819a266a293c47/understand-anything-plugin/packages/dashboard/src/store.ts)
+- dashboard interaction state and indexing tradeoffs in [`understand-anything-plugin/packages/dashboard/src/store.ts`](https://github.com/Lum1104/Understand-Anything/blob/26edf61856fa476e466bda1814819a266a293c47/understand-anything-plugin/packages/dashboard/src/store.ts)
+- token-gated dashboard loading and data fetch flow in [`understand-anything-plugin/packages/dashboard/src/App.tsx`](https://github.com/Lum1104/Understand-Anything/blob/26edf61856fa476e466bda1814819a266a293c47/understand-anything-plugin/packages/dashboard/src/App.tsx)
 - auto-update hook wiring in [`understand-anything-plugin/hooks/hooks.json`](https://github.com/Lum1104/Understand-Anything/blob/26edf61856fa476e466bda1814819a266a293c47/understand-anything-plugin/hooks/hooks.json)
 
 ## Practical questions and answers
@@ -161,7 +166,7 @@ Replacing prompt-written scan logic with deterministic scripts. That cuts cost, 
 
 **What is the clever practical move?**
 
-Dependency-aware batching. Grouping related files before semantic analysis is a very pragmatic way to improve context quality.
+Dependency-aware batching, plus explicit dashboard state indexes for navigation versus filtering. Grouping related files before semantic analysis improves context quality, and splitting first-match layer lookup from all-layer membership keeps the UI honest when one node participates in more than one architectural slice.
 
 **What is still fragile?**
 
