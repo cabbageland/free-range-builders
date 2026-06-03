@@ -2,7 +2,7 @@
 
 A daily builder's notebook.
 
-This repo is for **repo teardowns**: one interesting hot/trending GitHub project per day, studied with a builder's eye.
+This repo is for daily **builder teardowns**: one interesting hot/trending GitHub project and one interesting Hugging Face artifact per day, studied with a builder's eye.
 
 The goal is not shallow link sharing.
 The goal is to answer:
@@ -16,7 +16,8 @@ The goal is to answer:
 ## Format
 
 Daily notes live in:
-- `notes/YYYY-MM-DD_<repo-slug>.md`
+- `notes/YYYY-MM-DD_<github-repo-slug>.md`
+- `notes/YYYY-MM-DD_hf_<hugging-face-slug>.md`
 
 Each note aims to be:
 - concrete
@@ -27,7 +28,7 @@ Each note aims to be:
 
 ## Selection taste
 
-We prefer repos that are:
+We prefer GitHub repos and Hugging Face artifacts that are:
 - hot / trending / very popular
 - AI-related when possible
 - genuinely interesting
@@ -35,18 +36,18 @@ We prefer repos that are:
 - beautifully implemented
 - worth studying, not just hyped
 
-Popularity matters, but engineering quality matters too.
+Popularity matters, but engineering quality and reusable lessons matter too.
 
 ## Standing task
 
 See:
 - `DAILY_REPO_TASK.md`
 
-That file defines the recurring workflow and grounding for the daily 9:00 AM repo study task.
+That file defines the recurring workflow and grounding for the daily builder scout task.
 
 Current study-note bias:
-- make the notes feel like a **repo dissection**
-- describe the repository hierarchically and structurally
-- explain high-level layers, subsystem boundaries, and what each layer does
-- identify the concrete source files/directories that matter most
-- whenever a file or directory is mentioned in the note, link it to the actual GitHub source path
+- make the notes feel like a **source dissection**
+- describe the project, model, dataset, or Space hierarchically and structurally
+- explain high-level layers, subsystem boundaries, configs, artifacts, and what each layer does
+- identify the concrete source files/directories/model-card/config/artifacts that matter most
+- whenever a file, directory, config, model card, dataset card, or artifact is mentioned in the note, link it to the actual source path
