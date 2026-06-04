@@ -45,6 +45,8 @@ See:
 
 That file defines the recurring workflow and grounding for the daily builder scout task.
 
+For each target date, `python3 scripts/verify_daily.py --date YYYY-MM-DD` checks that the expected GitHub and Hugging Face notes exist and have the required teardown shape.
+
 Current study-note bias:
 - make the notes feel like a **source dissection**
 - describe the project, model, dataset, or Space hierarchically and structurally

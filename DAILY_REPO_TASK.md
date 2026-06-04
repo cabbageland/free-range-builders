@@ -68,8 +68,9 @@ For each daily run:
 1. create a note in:
    - `notes/YYYY-MM-DD_<github-repo-slug>.md` for the GitHub scout
    - `notes/YYYY-MM-DD_hf_<hugging-face-slug>.md` for the Hugging Face scout
-2. commit and push both notes to this repo in one daily commit, unless only one note changed during an idempotent repair
-3. send Tracy a short Slack summary with:
+2. run `python3 scripts/verify_daily.py --date YYYY-MM-DD` before committing
+3. commit and push both notes to this repo in one daily commit, unless only one note changed during an idempotent repair
+4. send Tracy a short Slack summary with:
    - GitHub pick
    - Hugging Face pick
    - one key insight from each
@@ -221,6 +222,8 @@ A good daily note should make Tracy feel:
 - "I know what to admire, steal, or distrust"
 
 If the note does not achieve that, it is not good enough.
+
+The daily run is not complete until `scripts/verify_daily.py` passes for the target date. If the cron is rerun and both notes already exist, run the verifier and finish with the existing commit state instead of creating duplicates.
 
 ---
 
