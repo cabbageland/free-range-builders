@@ -47,6 +47,8 @@ That file defines the recurring workflow and grounding for the daily builder sco
 
 For each target date, `python3 scripts/verify_daily.py --date YYYY-MM-DD` checks that the expected GitHub and Hugging Face notes exist and have the required teardown shape.
 
+Cron runs should use `python3 scripts/cron_preflight.py --date YYYY-MM-DD` as their first state check. It reports whether the day is `complete`, `missing`, or `invalid` without returning a non-zero exit code for the normal "notes are missing, go write them" case. Keep `scripts/verify_daily.py` as the final required verifier.
+
 Current study-note bias:
 - make the notes feel like a **source dissection**
 - describe the project, model, dataset, or Space hierarchically and structurally
