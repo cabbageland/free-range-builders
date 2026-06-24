@@ -186,6 +186,9 @@ The structural sections must be concrete, with links to the relevant GitHub or H
 
 ## Grounding / writing rules
 
+- use ordinary shell and file inspection for local repo reads: `ls`, `find`, `sed -n`, `grep`, `git`, `curl`, and small bounded parsers
+- do not use abstract helper actions like `print lines ...` or `search ...` against local files; they are flaky in cron and count as avoidable task failures
+- when you need to inspect large fetched files or temporary outputs, save them to disk and read short slices with `sed -n` or `grep -n`
 - do not stop at README summary alone
 - do not stop at a Hugging Face model card, dataset card, or Space landing page alone
 - inspect actual code structure when possible
