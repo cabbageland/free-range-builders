@@ -74,7 +74,7 @@ For each daily run:
    - GitHub pick
    - Hugging Face pick
    - one key insight from each
-   - commit hash
+   - pushed Git commit link, using Slack link syntax when posting in Slack
 
 ---
 
